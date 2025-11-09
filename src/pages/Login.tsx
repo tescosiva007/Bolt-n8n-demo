@@ -1,7 +1,5 @@
-import { useState, FormEvent } from 'react';
-import { supabase } from '../lib/supabase';
+import { FormEvent } from 'react';
 import { LogIn } from 'lucide-react';
-import type { UserProfile } from '../lib/supabase';
 
 interface LoginProps {
   onLoginSuccess: () => void;
@@ -9,63 +7,21 @@ interface LoginProps {
 }
 
 export default function Login({ onLoginSuccess, onSwitchToRegister }: LoginProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const validatePassword = (password: string) => {
-    const hasCapital = /[A-Z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    const minLength = password.length >= 8;
-    return hasCapital && hasNumber && hasSymbol && minLength;
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
-
-    if (!validateEmail(email)) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    if (!password) {
-      setError('Password is required');
-      return;
-    }
-
-    setLoading(true);
 
     try {
-      const { data: users, error: queryError } = await supabase
-        .from('user_profiles')
-        .select('id, full_name')
-        .ilike('id', email)
-        .maybeSingle();
-
-      if (!users) {
-        setError('Invalid email or password');
-        setLoading(false);
-        return;
-      }
+      const defaultUserId = '550e8400-e29b-41d4-a716-446655440000';
 
       localStorage.setItem('demo_user_session', JSON.stringify({
-        userId: users.id,
-        userEmail: email,
-        userName: users.full_name || email,
+        userId: defaultUserId,
+        userEmail: 'demo@example.com',
+        userName: 'Demo User',
       }));
 
       onLoginSuccess();
     } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setLoading(false);
+      console.error('Error:', err);
     }
   };
 
@@ -77,66 +33,21 @@ export default function Login({ onLoginSuccess, onSwitchToRegister }: LoginProps
             <LogIn className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Demo</h1>
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
+          <p className="text-gray-600 mt-2">Welcome to the Message System</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+          <p className="text-center text-gray-600 text-sm">
+            Click the button below to start managing messages
+          </p>
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            Enter System
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Don't have an account?{' '}
-            <button
-              onClick={onSwitchToRegister}
-              className="text-red-600 hover:text-red-700 font-semibold"
-            >
-              Register
-            </button>
-          </p>
-        </div>
       </div>
     </div>
   );

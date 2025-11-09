@@ -34,10 +34,27 @@ function App() {
       } catch (error) {
         console.error('Error parsing session:', error);
         localStorage.removeItem('demo_user_session');
+        initializeDefaultUser();
       }
+    } else {
+      initializeDefaultUser();
     }
 
     setLoading(false);
+  };
+
+  const initializeDefaultUser = () => {
+    const defaultUserId = '550e8400-e29b-41d4-a716-446655440000';
+
+    localStorage.setItem('demo_user_session', JSON.stringify({
+      userId: defaultUserId,
+      userEmail: 'demo@example.com',
+      userName: 'Demo User',
+    }));
+
+    setIsAuthenticated(true);
+    setUserName('Demo User');
+    setCurrentPage('messages');
   };
 
   const handleLoginSuccess = () => {

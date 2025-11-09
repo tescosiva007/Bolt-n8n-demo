@@ -190,15 +190,13 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Already have an account?{' '}
-            <button
-              onClick={onSwitchToLogin}
-              className="text-red-600 hover:text-red-700 font-semibold"
-            >
-              Sign In
-            </button>
-          </p>
+          <button
+            type="button"
+            onClick={onSwitchToLogin}
+            className="text-gray-600 hover:text-gray-700 text-sm"
+          >
+            Back to Login
+          </button>
         </div>
       </div>
     </div>
