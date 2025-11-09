@@ -28,13 +28,11 @@ export default function Messages({ onCreateMessage }: MessagesProps) {
       const from = (currentPage - 1) * messagesPerPage;
       const to = from + messagesPerPage - 1;
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('messages')
         .select('*')
         .order('date_created', { ascending: false })
         .range(from, to);
-
-      if (error) throw error;
 
       setMessages(data || []);
     } catch (error) {

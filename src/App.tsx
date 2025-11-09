@@ -16,60 +16,40 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
-      (async () => {
-        await checkSession();
-      })();
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    checkLocalSession();
   }, []);
 
-  const checkSession = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
+  const checkLocalSession = () => {
+    const storedSession = localStorage.getItem('demo_user_session');
 
-      if (session?.user) {
+    if (storedSession) {
+      try {
+        const session = JSON.parse(storedSession);
         setIsAuthenticated(true);
-
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('full_name')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        setUserName(profile?.full_name || 'User');
+        setUserName(session.userName || 'User');
 
         if (currentPage === 'login' || currentPage === 'register') {
           setCurrentPage('messages');
         }
-      } else {
-        setIsAuthenticated(false);
-        setCurrentPage('login');
+      } catch (error) {
+        console.error('Error parsing session:', error);
+        localStorage.removeItem('demo_user_session');
       }
-    } catch (error) {
-      console.error('Error checking session:', error);
-      setIsAuthenticated(false);
-      setCurrentPage('login');
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
-  const handleLoginSuccess = async () => {
-    await checkSession();
+  const handleLoginSuccess = () => {
+    checkLocalSession();
   };
 
   const handleRegisterSuccess = () => {
     setCurrentPage('login');
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    localStorage.removeItem('demo_user_session');
     setIsAuthenticated(false);
     setCurrentPage('login');
   };

@@ -60,33 +60,23 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
     setLoading(true);
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      const userId = email.replace(/[^a-zA-Z0-9]/g, '_');
 
-      if (signUpError) {
-        setError(signUpError.message);
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert([
+          {
+            id: userId,
+            full_name: fullName,
+          },
+        ]);
+
+      if (profileError) {
+        setError('Email already registered');
         return;
       }
 
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert([
-            {
-              id: data.user.id,
-              full_name: fullName,
-            },
-          ]);
-
-        if (profileError) {
-          setError('Failed to create user profile');
-          return;
-        }
-
-        onRegisterSuccess();
-      }
+      onRegisterSuccess();
     } catch (err) {
       setError('An unexpected error occurred');
     } finally {

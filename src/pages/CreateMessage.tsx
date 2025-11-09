@@ -82,15 +82,17 @@ export default function CreateMessage({ onCancel, onSuccess }: CreateMessageProp
     setLoading(true);
 
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('Not authenticated');
+      const session = localStorage.getItem('demo_user_session');
+      if (!session) throw new Error('Not authenticated');
+
+      const { userId } = JSON.parse(session);
 
       const { error } = await supabase.from('messages').insert([
         {
           title: subject,
           body: messageBody,
           list_of_stores: selectedStores,
-          user_id: userData.user.id,
+          user_id: userId,
         },
       ]);
 

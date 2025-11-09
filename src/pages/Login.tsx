@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
 import { LogIn } from 'lucide-react';
+import type { UserProfile } from '../lib/supabase';
 
 interface LoginProps {
   onLoginSuccess: () => void;
@@ -42,19 +43,25 @@ export default function Login({ onLoginSuccess, onSwitchToRegister }: LoginProps
     setLoading(true);
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data: users, error: queryError } = await supabase
+        .from('user_profiles')
+        .select('id, full_name')
+        .ilike('id', email)
+        .maybeSingle();
 
-      if (signInError) {
-        setError(signInError.message);
+      if (!users) {
+        setError('Invalid email or password');
+        setLoading(false);
         return;
       }
 
-      if (data.user) {
-        onLoginSuccess();
-      }
+      localStorage.setItem('demo_user_session', JSON.stringify({
+        userId: users.id,
+        userEmail: email,
+        userName: users.full_name || email,
+      }));
+
+      onLoginSuccess();
     } catch (err) {
       setError('An unexpected error occurred');
     } finally {
